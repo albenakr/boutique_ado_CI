@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Category(models.Model):
-
+    # otherwise within the Admin it's spelled 'Categorys' as django authomatically ads an as
+    # you can use this to adjust the verbose name or the plural form of it from the Django defaults.
     class Meta:
         verbose_name_plural = 'Categories'
 
