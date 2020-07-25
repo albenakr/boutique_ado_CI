@@ -12,8 +12,29 @@ def all_products(request):
     products = Product.objects.all()
     query = None
     categories = None
+    sort = None
+    direction = None
 
     if request.GET:
+        if 'sort' in request.GET:
+            sortkey = request.GET['sort']
+            #  the reason for copying the sort parameter into a new variable called sortkey. 
+            # Is because now we've preserved the original field. We want it to sort on name,  
+            # but we have the actual field we're going to sort on, lower_name in the sort key variable.
+            # If we had just renamed sort itself to lower_name we would have lost the original field name.
+            sort = sortkey
+            if sortkey == 'name':
+                sortkey = 'lower_name'
+                # Annotation allows us to add a temporary field on a model 
+                products = products.annotate(lower_name=Lower('name'))
+
+            if 'direction' in request.GET:
+                direction = request.GET['direction']
+                if direction == 'desc':
+                    # the '-' reverses the order to make it desc
+                    sortkey = f'-{sortkey}'
+            products = products.order_by(sortkey)
+       
         if 'category' in request.GET:
             categories = request.GET['category'].split(',')
             products = products.filter(category__name__in=categories)
@@ -31,11 +52,16 @@ def all_products(request):
             queries = Q(name__icontains=query) | Q(description__icontains=query)
             products = products.filter(queries)
 
+#using current_sorting to return to the template
+    current_sorting = f'{sort}_{direction}'
+
+# contect returns info to the template
     context = {
         'products': products,
         'search_term': query,
         'current_categories': categories,
-
+        # if there is no sorting, the value of this would be None_None
+        'current_sorting': current_sorting,
     }
 
     return render(request, 'products/products.html', context)
