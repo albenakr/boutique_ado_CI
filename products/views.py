@@ -27,6 +27,11 @@ def all_products(request):
                 sortkey = 'lower_name'
                 # Annotation allows us to add a temporary field on a model 
                 products = products.annotate(lower_name=Lower('name'))
+            
+            # so that categories are sorted by name, instead of ID
+            if sortkey == 'category':
+            # __ syntax allows us to drill into a related model
+               sortkey = 'category__name'
 
             if 'direction' in request.GET:
                 direction = request.GET['direction']
